@@ -15,7 +15,7 @@ export class BattleRoom extends Room<MyRoomState> {
     this.lock();
     this.setPatchRate(25);
     this.setState(new MyRoomState());    
-    console.log("onCreate BattleRoom");
+    console.log("onCreate BattleRoom id: ", this.roomId);
 
     if (options.password) {
       console.log("password:", options.password);
@@ -99,7 +99,7 @@ export class BattleRoom extends Room<MyRoomState> {
           break;
         case "game-start":
           this.readyPlayer++;
-          // console.log("game-start readyPlayer: ",this.readyPlayer);
+          console.log("game-start readyPlayer: ",this.readyPlayer);
           if(this.readyPlayer == this.maxClients - 1){
             this.broadcast('game-start', { data: {isStart:true} });
             await matchMaker.remoteRoomCall(this.remoteRoomId, "closeRoom", [{ roomId: this.roomId }]);
@@ -128,7 +128,7 @@ export class BattleRoom extends Room<MyRoomState> {
 
         case "game-over":          
             console.log("gameover:", message);
-            this.broadcast('game-event', { state: 'game-over', result: 1, data: message });
+            this.broadcast('game-event', { event: 'game-over', result: 1, data: message });
             setTimeout(()=>{
                 this.disconnect();
             }, 5000);
@@ -275,6 +275,7 @@ export class BattleRoom extends Room<MyRoomState> {
   }
 
   async onLeave(client: Client, consented: boolean) {
+    console.log("onLeave client.id: ",client.id, "   consented: ", consented);
     //this.disconnect();    
     this.state.players.get((client as any).options?.userId).connected = false;
     try {
@@ -293,6 +294,7 @@ export class BattleRoom extends Room<MyRoomState> {
       const promise = await reconnection.promise;
       console.log("battle room reconnection token:", promise._reconnectionToken);
     } catch (e) {
+      console.log("onLeave catch error: ",e);
       // reconnection has been rejected. let's remove the client.
       //this.state.players.delete((client as any).options.userId);
     }

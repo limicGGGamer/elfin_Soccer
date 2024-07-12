@@ -17,7 +17,7 @@ class BattleRoom extends core_1.Room {
         this.lock();
         this.setPatchRate(25);
         this.setState(new MyRoomState_1.MyRoomState());
-        console.log("onCreate BattleRoom");
+        console.log("onCreate BattleRoom id: ", this.roomId);
         if (options.password) {
             console.log("password:", options.password);
             this.setPrivate();
@@ -96,7 +96,7 @@ class BattleRoom extends core_1.Room {
                     break;
                 case "game-start":
                     this.readyPlayer++;
-                    // console.log("game-start readyPlayer: ",this.readyPlayer);
+                    console.log("game-start readyPlayer: ", this.readyPlayer);
                     if (this.readyPlayer == this.maxClients - 1) {
                         this.broadcast('game-start', { data: { isStart: true } });
                         await core_1.matchMaker.remoteRoomCall(this.remoteRoomId, "closeRoom", [{ roomId: this.roomId }]);
@@ -122,7 +122,7 @@ class BattleRoom extends core_1.Room {
                     break;
                 case "game-over":
                     console.log("gameover:", message);
-                    this.broadcast('game-event', { state: 'game-over', result: 1, data: message });
+                    this.broadcast('game-event', { event: 'game-over', result: 1, data: message });
                     setTimeout(() => {
                         this.disconnect();
                     }, 5000);
@@ -251,6 +251,7 @@ class BattleRoom extends core_1.Room {
         }*/
     }
     async onLeave(client, consented) {
+        console.log("onLeave client.id: ", client.id, "   consented: ", consented);
         //this.disconnect();    
         this.state.players.get(client.options?.userId).connected = false;
         try {
@@ -266,6 +267,7 @@ class BattleRoom extends core_1.Room {
             console.log("battle room reconnection token:", promise._reconnectionToken);
         }
         catch (e) {
+            console.log("onLeave catch error: ", e);
             // reconnection has been rejected. let's remove the client.
             //this.state.players.delete((client as any).options.userId);
         }
